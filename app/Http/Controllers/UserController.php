@@ -73,9 +73,6 @@ class UserController extends Controller
         // Table header
         $header = ['Name', 'Email'];
 
-        // Get users data
-        $users = User::select('name', 'email')->get();
-
         // Start table
         $html = '<table border="1" cellpadding="4">';
 
@@ -86,18 +83,31 @@ class UserController extends Controller
         }
         $html .= '</tr>';
 
-        // Add data rows
-        foreach ($users as $user) {
-            $html .= '<tr>';
-            $html .= '<td>' . $user->name . '</td>';
-            $html .= '<td>' . $user->email . '</td>';
-            $html .= '</tr>';
+        // Process users in chunks
+        User::select('name', 'email')
+            ->orderBy('id')
+            ->chunk(1000, function ($users) use (&$pdf, &$html) {
+                foreach ($users as $user) {
+                    $html .= '<tr>';
+                    $html .= '<td>' . htmlspecialchars($user->name) . '</td>';
+                    $html .= '<td>' . htmlspecialchars($user->email) . '</td>';
+                    $html .= '</tr>';
+                }
+
+                // Write the chunk to PDF to free up memory
+                if (strlen($html) > 50000) { // Write to PDF if HTML gets too large
+                    $html .= '</table>';
+                    $pdf->writeHTML($html, true, false, true, false, '');
+                    // Start a new table for the next chunk
+                    $html = '<table border="1" cellpadding="4">';
+                }
+            });
+
+        // Write any remaining HTML
+        if (strlen($html) > 0) {
+            $html .= '</table>';
+            $pdf->writeHTML($html, true, false, true, false, '');
         }
-
-        $html .= '</table>';
-
-        // Print table
-        $pdf->writeHTML($html, true, false, true, false, '');
 
         // Close and output PDF document
         return $pdf->Output('users_list.pdf', 'D');
