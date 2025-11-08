@@ -3,14 +3,18 @@
 namespace App\Exports;
 
 use App\Models\User;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use Maatwebsite\Excel\Concerns\Exportable;
 use Carbon\Carbon;
 
-class UserExport implements FromCollection, WithHeadings, WithTitle
+class UserExport implements FromQuery, WithHeadings, WithTitle
 {
+    use Exportable;
+
     protected $date;
+    protected $chunkSize = 1000; // Default chunk size
 
     public function __construct($date)
     {
@@ -18,13 +22,13 @@ class UserExport implements FromCollection, WithHeadings, WithTitle
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function collection()
+    public function query()
     {
-        return User::where('created_at', '<', $this->date)
-            ->select('name', 'email')
-            ->get();
+        return User::query()
+            ->where('created_at', '<', $this->date)
+            ->select('*');
     }
 
     /**
