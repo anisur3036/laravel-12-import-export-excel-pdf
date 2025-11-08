@@ -7,3 +7,4 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::get('/users/export', [UserController::class, 'index']);
+Route::post('/users/import', [UserController::class, 'import'])->name('users.import');
