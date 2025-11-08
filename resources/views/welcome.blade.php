@@ -25,6 +25,8 @@
         <input type="file" name="file" required>
         <button type="submit">Import Users</button>
     </form>
+
+    <a href="{{ route('users.export-pdf') }}">Export Users as PDF</a>
 </body>
 
 </html>
