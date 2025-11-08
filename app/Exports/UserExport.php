@@ -22,7 +22,9 @@ class UserExport implements FromCollection, WithHeadings, WithTitle
      */
     public function collection()
     {
-        return User::where('created_at', '<', $this->date)->get();
+        return User::where('created_at', '<', $this->date)
+            ->select('name', 'email')
+            ->get();
     }
 
     /**
@@ -31,12 +33,8 @@ class UserExport implements FromCollection, WithHeadings, WithTitle
     public function headings(): array
     {
         return [
-            'ID',
             'Name',
-            'Email',
-            'Email Verified At',
-            'Created At',
-            'Updated At'
+            'Email'
         ];
     }
 
